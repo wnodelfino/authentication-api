@@ -10,18 +10,18 @@ class UserController {
 
     async store(req: Request, res: Response) {
         const repository = getRepository(User);
-        const { email, password } = req.body;
 
-        const userExists = await repository.findOne({ where: { email } });
+        const userExists = await repository.findOne({ where: { email: req.body.email } });
 
         if (userExists) {
             return res.sendStatus(409);
         }
 
-        const user = repository.create({ email, password });
+        const user = repository.create({ email: req.body.email, password: req.body.password });
         await repository.save(user);
 
-        return res.json(user);
+        const {password,hashPassword, ...payload} = user
+        return res.json(payload);
     }
 }
 

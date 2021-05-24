@@ -8,21 +8,20 @@ import User from '../models/User';
 class AuthController {
     async authenticate(req: Request, res: Response) {
         const repository = getRepository(User);
-        const { email, password } = req.body;
 
-        const user = await repository.findOne({ where: { email } });
+        const userResponse = await repository.findOne({ where: { email: req.body.email } });
 
-        if (!user) {
+        if (!userResponse) {
             return res.sendStatus(401)
         }
-
-        const isValidPassword = await bcrypt.compare(password, user.password);
+        const {password,hashPassword, ...user} = userResponse    
+        const isValidPassword = await bcrypt.compare( req.body.password, userResponse.password);
 
         if (!isValidPassword) {
             return res.sendStatus(401);
         }
 
-        const token = jwt.sign({ id: user.id }, 'secret', { expiresIn: '1d' });
+        const token = jwt.sign({ id: userResponse.id }, 'secret', { expiresIn: '1d' });
 
         return res.json({
             user,
